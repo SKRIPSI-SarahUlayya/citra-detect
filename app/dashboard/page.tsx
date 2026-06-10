@@ -24,7 +24,25 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="px-4 lg:px-6">
+        <Link href="/dashboard/detection">
+          <div className="flex items-center gap-3 rounded-xl border bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 transition-colors hover:from-primary/15 hover:to-primary/10">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <IconPhotoScan className="size-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-none">Mulai Deteksi Baru</p>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                Unggah citra untuk dianalisis CNN + Grad-CAM
+              </p>
+            </div>
+            <IconArrowRight className="size-4 shrink-0 text-muted-foreground" />
+          </div>
+        </Link>
+      </div>
+
       <SectionCards />
+
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
       </div>
@@ -84,23 +102,6 @@ export default function DashboardPage() {
                 ))}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="px-4 lg:px-6">
-        <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
-          <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
-            <IconPhotoScan className="size-12 text-primary" />
-            <div>
-              <h3 className="text-lg font-semibold">Mulai Deteksi Baru</h3>
-              <p className="text-muted-foreground text-sm">
-                Unggah citra Instagram untuk dianalisis oleh model CNN + Grad-CAM
-              </p>
-            </div>
-            <Button size="lg" asChild>
-              <Link href="/dashboard/detection">Deteksi Sekarang</Link>
-            </Button>
           </CardContent>
         </Card>
       </div>
