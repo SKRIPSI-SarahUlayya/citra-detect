@@ -10,6 +10,7 @@ import {
   IconHistory,
   IconInfoCircle,
   IconScan,
+  IconLogout,
 } from "@tabler/icons-react"
 
 import {
@@ -93,7 +94,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-3 py-2 text-xs text-muted-foreground">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip="Keluar"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Link href="/login">
+                <IconLogout />
+                <span>Keluar</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+        <div className="px-3 pb-2 text-xs text-muted-foreground">
           <p className="font-medium">CitraDetect v0.1.0</p>
           <p>CNN + Grad-CAM XAI</p>
         </div>
