@@ -3,6 +3,20 @@
 import * as React from "react"
 import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
+// Suppress React 19 console error for next-themes script tag in development
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  const orig = console.error
+  console.error = (...args: any[]) => {
+    if (
+      typeof args[0] === "string" &&
+      args[0].includes("Encountered a script tag while rendering React component")
+    ) {
+      return
+    }
+    orig.apply(console, args)
+  }
+}
+
 function ThemeProvider({
   children,
   ...props
