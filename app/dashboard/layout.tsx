@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { MobileBottomBar } from "@/components/mobile-bottom-bar"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export const metadata = {
@@ -27,10 +28,11 @@ export default function DashboardLayout({
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
+          <div className="@container/main flex flex-1 flex-col gap-2 pb-24 md:pb-0">
             {children}
           </div>
         </div>
+        <MobileBottomBar />
       </SidebarInset>
     </SidebarProvider>
   )
