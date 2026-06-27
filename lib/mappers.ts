@@ -1,14 +1,18 @@
 import { supabase } from "./supabase"
 import type { DetectionResult, ModelMetrics, EpochPoint, Prediction, DetectionStatus } from "./types"
 
-export function rowToDetection(row: any): DetectionResult {
-  const originalImageUrl = row.original_image_path
-    ? supabase.storage.from("detection-images").getPublicUrl(row.original_image_path).data.publicUrl
-    : ""
+export async function rowToDetection(row: any): Promise<DetectionResult> {
+  let originalImageUrl = ""
+  if (row.original_image_path) {
+    const { data } = await supabase.storage.from("detection-images").createSignedUrl(row.original_image_path, 3600)
+    originalImageUrl = data?.signedUrl || ""
+  }
 
-  const gradcamHeatmapUrl = row.gradcam_image_path
-    ? supabase.storage.from("gradcam-results").getPublicUrl(row.gradcam_image_path).data.publicUrl
-    : null
+  let gradcamHeatmapUrl: string | null = null
+  if (row.gradcam_image_path) {
+    const { data } = await supabase.storage.from("gradcam-results").createSignedUrl(row.gradcam_image_path, 3600)
+    gradcamHeatmapUrl = data?.signedUrl || null
+  }
 
   let preprocessing = { resizedTo: [224, 224] as [number, number], normalized: true }
   if (row.preprocessing_info) {

@@ -38,7 +38,7 @@ export async function getHistory(): Promise<DetectionResult[]> {
     return []
   }
 
-  return (data || []).map(rowToDetection)
+  return Promise.all((data || []).map(rowToDetection))
 }
 
 export async function getDetectionById(id: string): Promise<DetectionResult | null> {
@@ -52,10 +52,15 @@ export async function getDetectionById(id: string): Promise<DetectionResult | nu
     return null
   }
 
-  return rowToDetection(data)
+  return await rowToDetection(data)
 }
 
 export async function saveDetection(result: DetectionResult): Promise<void> {
+  if (result.id.startsWith("temp_")) {
+    // Guest user - do not save to database
+    return
+  }
+
   const { error } = await supabase
     .from("detections")
     .upsert({
@@ -92,6 +97,10 @@ export async function saveDetection(result: DetectionResult): Promise<void> {
 }
 
 export async function deleteDetection(id: string): Promise<void> {
+  if (id.startsWith("temp_")) {
+    return
+  }
+
   // First get paths to delete from storage
   const { data } = await supabase
     .from("detections")
@@ -120,6 +129,10 @@ export async function deleteDetection(id: string): Promise<void> {
 }
 
 export async function detectImage(file: File): Promise<DetectionResult> {
+  // Check session first
+  const { data: { session } } = await supabase.auth.getSession()
+  const isLoggedIn = !!session
+
   // 1. Get active model
   const { data: activeModel } = await supabase
     .from("model_versions")
@@ -129,17 +142,45 @@ export async function detectImage(file: File): Promise<DetectionResult> {
 
   const modelVersionId = activeModel?.id
 
-  // Create temporary entry
+  if (!isLoggedIn) {
+    // Guest flow - run locally, do not save to database or storage
+    await new Promise((resolve) => setTimeout(resolve, 1800))
+
+    const isPredictedAI = Math.random() > 0.45
+    const confidence = 0.82 + Math.random() * 0.18
+    const executionTimeSeconds = 1.2 + Math.random() * 0.8
+
+    return {
+      id: `temp_${Date.now()}`,
+      fileName: file.name,
+      fileSize: file.size,
+      fileMimeType: file.type,
+      originalWidth: 1080,
+      originalHeight: 1080,
+      prediction: isPredictedAI ? "AI-Generated" : "Asli",
+      confidence: parseFloat(confidence.toFixed(4)),
+      originalImageUrl: URL.createObjectURL(file),
+      gradcamHeatmapUrl: `https://picsum.photos/seed/${Date.now()}/400/400`,
+      preprocessing: { resizedTo: [224, 224], normalized: true },
+      executionTimeSeconds: parseFloat(executionTimeSeconds.toFixed(3)),
+      createdAt: new Date().toISOString(),
+      status: "success",
+      modelVersionId,
+    }
+  }
+
+  // Authenticated flow - create entry and upload to storage
   const { data: inserted, error: insertError } = await supabase
     .from("detections")
     .insert({
       file_name: file.name,
       file_size_bytes: file.size,
       file_mime_type: file.type,
-      image_width: 1080, // Fallback, will be updated or computed if needed
+      image_width: 1080,
       image_height: 1080,
       status: "processing",
       model_version_id: modelVersionId,
+      user_id: session.user.id,
     })
     .select()
     .single()
@@ -153,7 +194,7 @@ export async function detectImage(file: File): Promise<DetectionResult> {
   try {
     // 2. Upload file to detection-images bucket
     const fileExt = file.name.split(".").pop() || "jpg"
-    const originalPath = `anon/${detectionId}.${fileExt}`
+    const originalPath = `${session.user.id}/${detectionId}.${fileExt}`
     
     const { error: uploadError } = await supabase.storage
       .from("detection-images")
@@ -162,7 +203,6 @@ export async function detectImage(file: File): Promise<DetectionResult> {
     if (uploadError) throw uploadError
 
     // 3. Simulate inference (ML CNN + Heatmap generation)
-    // Wait a short time to simulate network + processing delay
     await new Promise((resolve) => setTimeout(resolve, 1500))
 
     const isPredictedAI = Math.random() > 0.45
@@ -170,7 +210,7 @@ export async function detectImage(file: File): Promise<DetectionResult> {
     const executionTimeSeconds = 1.2 + Math.random() * 0.8
 
     // For the heatmap, fetch a dummy heatmap image and upload it
-    const heatmapPath = `anon/${detectionId}_heatmap.png`
+    const heatmapPath = `${session.user.id}/${detectionId}_heatmap.png`
     const dummyHeatmapUrl = `https://picsum.photos/seed/${detectionId}/224/224`
     const heatmapResponse = await fetch(dummyHeatmapUrl)
     const heatmapBlob = await heatmapResponse.blob()
@@ -198,7 +238,7 @@ export async function detectImage(file: File): Promise<DetectionResult> {
 
     if (updateError || !updated) throw new Error(updateError?.message || "Failed to update detection results")
 
-    return rowToDetection(updated)
+    return await rowToDetection(updated)
   } catch (err: any) {
     console.error("Detection error:", err)
     
@@ -218,6 +258,6 @@ export async function detectImage(file: File): Promise<DetectionResult> {
       .eq("id", detectionId)
       .single()
 
-    return rowToDetection(failedRecord || inserted)
+    return await rowToDetection(failedRecord || inserted)
   }
 }

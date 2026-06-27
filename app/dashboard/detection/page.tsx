@@ -211,9 +211,11 @@ export default function DetectionPage() {
           </details>
 
           <div className="flex gap-2 flex-wrap">
-            <Button onClick={handleSave} disabled={saved} variant="outline">
-              {saved ? "Tersimpan ✓" : "Simpan ke Riwayat"}
-            </Button>
+            {!result.id.startsWith("temp_") && (
+              <Button onClick={handleSave} disabled={saved} variant="outline">
+                {saved ? "Tersimpan ✓" : "Simpan ke Riwayat"}
+              </Button>
+            )}
             <Button onClick={reset} variant="outline">Deteksi Citra Lain</Button>
             {result.gradcamHeatmapUrl && (
               <Button asChild variant="outline">

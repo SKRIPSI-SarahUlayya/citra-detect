@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { supabase } from "@/lib/supabase"
 import { IconScan, IconLoader2, IconEye, IconEyeOff } from "@tabler/icons-react"
 
 export default function LoginPage() {
@@ -32,10 +33,22 @@ export default function LoginPage() {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1200))
-    setLoading(false)
-    toast.success("Login berhasil! Selamat datang kembali.")
-    router.push("/dashboard")
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
+      })
+      if (error) {
+        toast.error(error.message)
+      } else {
+        toast.success("Login berhasil! Selamat datang kembali.")
+        router.push("/dashboard")
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {

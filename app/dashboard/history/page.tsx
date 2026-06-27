@@ -27,8 +27,9 @@ import { PredictionBadge } from "@/components/prediction-badge"
 import { ConfidenceBar } from "@/components/confidence-bar"
 import { EmptyState } from "@/components/empty-state"
 import { getHistory, deleteDetection } from "@/lib/api"
+import { supabase } from "@/lib/supabase"
 import type { DetectionResult, Prediction } from "@/lib/types"
-import { IconArrowUp, IconArrowDown, IconDotsVertical, IconEye, IconDownload, IconTrash, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
+import { IconArrowUp, IconArrowDown, IconDotsVertical, IconEye, IconDownload, IconTrash, IconChevronLeft, IconChevronRight, IconLock } from "@tabler/icons-react"
 
 function SortableHeader({ column, label }: { column: any; label: string }) {
   return (
@@ -142,6 +143,8 @@ const columns: ColumnDef<DetectionResult>[] = [
 ]
 
 export default function HistoryPage() {
+  const [user, setUser] = React.useState<any>(null)
+  const [authLoading, setAuthLoading] = React.useState(true)
   const [data, setData] = React.useState<DetectionResult[]>([])
   const [loading, setLoading] = React.useState(true)
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }])
@@ -162,7 +165,13 @@ export default function HistoryPage() {
   }, [])
 
   React.useEffect(() => {
-    loadData()
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+      if (session?.user) {
+        loadData()
+      }
+    })
   }, [loadData])
 
   const handleDelete = async (id: string) => {
@@ -190,6 +199,38 @@ export default function HistoryPage() {
       onDelete: handleDelete,
     },
   })
+
+  if (authLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-24 text-muted-foreground text-sm">
+        Memuat status otentikasi…
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 text-center space-y-4 max-w-md mx-auto py-24">
+        <div className="size-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+          <IconLock className="size-8" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold">Riwayat Deteksi Terkunci</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Halaman ini hanya dapat diakses oleh peneliti terdaftar. Silakan masuk atau daftarkan akun peneliti Anda untuk menyimpan dan mengelola riwayat analisis citra.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button asChild>
+            <Link href="/login">Masuk</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/register">Daftar Akun</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const handlePredFilter = (val: string) => {
     setPredFilter(val)

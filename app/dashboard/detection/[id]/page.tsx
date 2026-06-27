@@ -28,14 +28,15 @@ function formatBytes(bytes: number) {
     : `${(bytes / 1024).toFixed(0)} KB`
 }
 
-export default function DetectionDetailPage({ params }: { params: { id: string } }) {
+export default function DetectionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
+  const { id } = React.use(params)
   const [result, setResult] = React.useState<DetectionResult | null | undefined>(undefined)
   const [deleting, setDeleting] = React.useState(false)
 
   React.useEffect(() => {
-    getDetectionById(params.id).then(setResult)
-  }, [params.id])
+    getDetectionById(id).then(setResult)
+  }, [id])
 
   if (result === undefined) {
     return (

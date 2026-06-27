@@ -11,7 +11,9 @@ import {
   IconInfoCircle,
   IconScan,
   IconLogout,
+  IconLogin,
 } from "@tabler/icons-react"
+import { supabase } from "@/lib/supabase"
 
 import {
   Sidebar,
@@ -39,6 +41,25 @@ const navSecondary = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const [user, setUser] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    if (user) {
+      e.preventDefault()
+      await supabase.auth.signOut()
+      window.location.href = "/login"
+    }
+  }
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -98,12 +119,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              tooltip="Keluar"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              tooltip={user ? "Keluar" : "Masuk"}
+              className={user ? "text-destructive hover:bg-destructive/10 hover:text-destructive" : ""}
             >
-              <Link href="/login">
-                <IconLogout />
-                <span>Keluar</span>
+              <Link href={user ? "#" : "/login"} onClick={handleLogout}>
+                {user ? <IconLogout /> : <IconLogin />}
+                <span>{user ? "Keluar" : "Masuk"}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

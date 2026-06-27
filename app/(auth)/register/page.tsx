@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Separator } from "@/components/ui/separator"
 import { IconScan, IconLoader2, IconEye, IconEyeOff, IconCheck, IconX } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
+import { supabase } from "@/lib/supabase"
 
 const PASSWORD_RULES = [
   { label: "Minimal 8 karakter", test: (p: string) => p.length >= 8 },
@@ -60,10 +61,27 @@ export default function RegisterPage() {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1400))
-    setLoading(false)
-    toast.success("Akun berhasil dibuat! Silakan masuk.")
-    router.push("/login")
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            full_name: form.name,
+          },
+        },
+      })
+      if (error) {
+        toast.error(error.message)
+      } else {
+        toast.success("Registrasi sukses! Silakan cek email Anda untuk verifikasi atau silakan masuk.")
+        router.push("/login")
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Terjadi kesalahan.")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const set = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
