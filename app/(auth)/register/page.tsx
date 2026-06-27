@@ -16,7 +16,6 @@ import { supabase } from "@/lib/supabase"
 
 const PASSWORD_RULES = [
   { label: "Minimal 8 karakter", test: (p: string) => p.length >= 8 },
-  { label: "Mengandung huruf besar", test: (p: string) => /[A-Z]/.test(p) },
   { label: "Mengandung angka", test: (p: string) => /[0-9]/.test(p) },
 ]
 
@@ -25,7 +24,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = React.useState(false)
   const [showPassword, setShowPassword] = React.useState(false)
   const [showConfirm, setShowConfirm] = React.useState(false)
-  const [agreed, setAgreed] = React.useState(false)
   const [form, setForm] = React.useState({
     name: "",
     email: "",
@@ -37,13 +35,12 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    agreed: "",
   })
 
   const passwordStrength = PASSWORD_RULES.filter((r) => r.test(form.password))
 
   const validate = () => {
-    const e = { name: "", email: "", password: "", confirmPassword: "", agreed: "" }
+    const e = { name: "", email: "", password: "", confirmPassword: "" }
     if (!form.name.trim()) e.name = "Nama wajib diisi."
     if (!form.email) e.email = "Email wajib diisi."
     else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Format email tidak valid."
@@ -52,7 +49,6 @@ export default function RegisterPage() {
       e.password = "Kata sandi belum memenuhi semua persyaratan."
     if (!form.confirmPassword) e.confirmPassword = "Konfirmasi kata sandi wajib diisi."
     else if (form.password !== form.confirmPassword) e.confirmPassword = "Kata sandi tidak cocok."
-    if (!agreed) e.agreed = "Anda harus menyetujui syarat & ketentuan."
     setErrors(e)
     return Object.values(e).every((v) => !v)
   }
@@ -206,26 +202,6 @@ export default function RegisterPage() {
               {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-start gap-2.5">
-                <Checkbox
-                  id="agreed"
-                  checked={agreed}
-                  onCheckedChange={(v) => {
-                    setAgreed(!!v)
-                    if (v) setErrors((p) => ({ ...p, agreed: "" }))
-                  }}
-                  disabled={loading}
-                  className={errors.agreed ? "border-destructive" : ""}
-                />
-                <Label htmlFor="agreed" className="text-sm font-normal leading-snug cursor-pointer">
-                  Saya menyetujui{" "}
-                  <span className="text-primary underline cursor-pointer">syarat & ketentuan</span>{" "}
-                  penggunaan CitraDetect.
-                </Label>
-              </div>
-              {errors.agreed && <p className="text-xs text-destructive">{errors.agreed}</p>}
-            </div>
           </CardContent>
 
           <CardFooter className="flex flex-col gap-3 pt-2">

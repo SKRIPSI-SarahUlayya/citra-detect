@@ -139,10 +139,15 @@ export default function LoginPage() {
 
             <Separator />
 
-            <p className="text-center text-sm text-muted-foreground">
-              Belum punya akun?{" "}
-              <Link href="/register" className="font-medium text-primary hover:underline">
-                Daftar sekarang
+            <p className="text-center text-sm text-muted-foreground flex flex-col gap-2">
+              <span>
+                Belum punya akun?{" "}
+                <Link href="/register" className="font-medium text-primary hover:underline">
+                  Daftar sekarang
+                </Link>
+              </span>
+              <Link href="/" className="text-xs hover:underline mt-2">
+                ← Kembali ke Halaman Utama (Landing Page)
               </Link>
             </p>
           </CardFooter>
