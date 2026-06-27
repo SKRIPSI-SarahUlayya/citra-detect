@@ -1,5 +1,7 @@
 export type Prediction = "AI-Generated" | "Asli"
 
+export type DetectionStatus = "processing" | "success" | "failed"
+
 export interface DetectionResult {
   id: string
   fileName: string
@@ -7,16 +9,20 @@ export interface DetectionResult {
   fileMimeType: string
   originalWidth: number
   originalHeight: number
-  prediction: Prediction
-  confidence: number
+  prediction: Prediction | null
+  confidence: number | null
   originalImageUrl: string
-  gradcamHeatmapUrl: string
+  gradcamHeatmapUrl: string | null
   preprocessing: {
     resizedTo: [number, number]
     normalized: boolean
   }
-  executionTimeSeconds: number
+  executionTimeSeconds: number | null
   createdAt: string
+  status: DetectionStatus
+  errorMessage?: string | null
+  modelVersionId?: string
+  userId?: string | null
 }
 
 export interface ModelMetrics {

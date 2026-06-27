@@ -10,7 +10,7 @@ import { ProcessingStepper } from "@/components/processing-stepper"
 import { GradcamViewer } from "@/components/gradcam-viewer"
 import { detectImage, saveDetection } from "@/lib/api"
 import type { DetectionResult } from "@/lib/types"
-import { mockMetrics } from "@/lib/mock-data"
+import { getMetrics } from "@/lib/api"
 import { IconUpload, IconX, IconChartBar } from "@tabler/icons-react"
 import Link from "next/link"
 
@@ -20,6 +20,12 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp"]
 const MAX_SIZE = 10 * 1024 * 1024
 
 export default function DetectionPage() {
+  const [metrics, setMetrics] = React.useState<any>(null)
+
+  React.useEffect(() => {
+    getMetrics().then(setMetrics).catch(console.error)
+  }, [])
+
   const [state, setState] = React.useState<State>("upload")
   const [file, setFile] = React.useState<File | null>(null)
   const [preview, setPreview] = React.useState<string | null>(null)
@@ -160,7 +166,7 @@ export default function DetectionPage() {
               </div>
               <ConfidenceBar confidence={result.confidence} />
               <div className="flex gap-6 text-sm text-muted-foreground">
-                <span>Waktu: <strong>{result.executionTimeSeconds.toFixed(2)}s</strong></span>
+                <span>Waktu: <strong>{result.executionTimeSeconds !== null ? `${result.executionTimeSeconds.toFixed(2)}s` : "Mengukur…"}</strong></span>
                 <span>
                   {new Date(result.createdAt).toLocaleString("id-ID", {
                     dateStyle: "medium",
@@ -187,11 +193,11 @@ export default function DetectionPage() {
               <IconChartBar className="size-4" /> Konteks Performa Model
             </summary>
             <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-              {[
-                ["Akurasi", `${(mockMetrics.accuracy * 100).toFixed(1)}%`],
-                ["Presisi", `${(mockMetrics.precision * 100).toFixed(1)}%`],
-                ["Recall", `${(mockMetrics.recall * 100).toFixed(1)}%`],
-                ["F1-Score", `${(mockMetrics.f1Score * 100).toFixed(1)}%`],
+               {[
+                ["Akurasi", metrics ? `${(metrics.accuracy * 100).toFixed(1)}%` : "Loading…"],
+                ["Presisi", metrics ? `${(metrics.precision * 100).toFixed(1)}%` : "Loading…"],
+                ["Recall", metrics ? `${(metrics.recall * 100).toFixed(1)}%` : "Loading…"],
+                ["F1-Score", metrics ? `${(metrics.f1Score * 100).toFixed(1)}%` : "Loading…"],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-lg bg-muted p-3">
                   <p className="text-muted-foreground text-xs">{label}</p>
@@ -209,11 +215,13 @@ export default function DetectionPage() {
               {saved ? "Tersimpan ✓" : "Simpan ke Riwayat"}
             </Button>
             <Button onClick={reset} variant="outline">Deteksi Citra Lain</Button>
-            <Button asChild variant="outline">
-              <a href={result.gradcamHeatmapUrl} download="gradcam-heatmap.jpg">
-                Unduh Heatmap
-              </a>
-            </Button>
+            {result.gradcamHeatmapUrl && (
+              <Button asChild variant="outline">
+                <a href={result.gradcamHeatmapUrl} download="gradcam-heatmap.png">
+                  Unduh Heatmap
+                </a>
+              </Button>
+            )}
           </div>
         </div>
       )}

@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider"
 
 interface GradcamViewerProps {
   originalImageUrl: string
-  heatmapUrl: string
+  heatmapUrl: string | null
   fileName?: string
 }
 
@@ -33,12 +33,18 @@ export function GradcamViewer({ originalImageUrl, heatmapUrl, fileName }: Gradca
           </div>
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-center text-muted-foreground">Grad-CAM Heatmap</p>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={heatmapUrl}
-              alt="Grad-CAM heatmap"
-              className="w-full rounded-lg object-cover aspect-square"
-            />
+            {heatmapUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={heatmapUrl}
+                alt="Grad-CAM heatmap"
+                className="w-full rounded-lg object-cover aspect-square"
+              />
+            ) : (
+              <div className="w-full rounded-lg bg-muted flex items-center justify-center aspect-square text-xs text-muted-foreground p-4 text-center">
+                Heatmap sedang diproses...
+              </div>
+            )}
           </div>
         </div>
       </TabsContent>
@@ -52,13 +58,15 @@ export function GradcamViewer({ originalImageUrl, heatmapUrl, fileName }: Gradca
               alt={fileName ?? "Citra asli"}
               className="absolute inset-0 h-full w-full object-cover"
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={heatmapUrl}
-              alt="Grad-CAM overlay"
-              className="absolute inset-0 h-full w-full object-cover transition-opacity"
-              style={{ opacity: opacity / 100 }}
-            />
+            {heatmapUrl && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={heatmapUrl}
+                alt="Grad-CAM overlay"
+                className="absolute inset-0 h-full w-full object-cover transition-opacity"
+                style={{ opacity: opacity / 100 }}
+              />
+            )}
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">

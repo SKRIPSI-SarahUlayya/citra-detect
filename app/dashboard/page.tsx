@@ -6,7 +6,7 @@ import { ConfidenceBar } from "@/components/confidence-bar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { mockHistory } from "@/lib/mock-data"
+import { getHistory } from "@/lib/api"
 import { IconPhotoScan, IconArrowRight } from "@tabler/icons-react"
 
 export const metadata = { title: "Dashboard" }
@@ -19,8 +19,9 @@ function formatRelative(iso: string) {
   return `${Math.floor(hours / 24)} hari lalu`
 }
 
-export default function DashboardPage() {
-  const recent = mockHistory.slice(0, 5)
+export default async function DashboardPage() {
+  const history = await getHistory()
+  const recent = history.slice(0, 5)
 
   return (
     <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

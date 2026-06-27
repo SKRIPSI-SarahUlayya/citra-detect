@@ -95,7 +95,7 @@ export default function DetectionDetailPage({ params }: { params: { id: string }
               ["Format", result.fileMimeType.split("/")[1].toUpperCase()],
               ["Setelah Preprocessing", `${result.preprocessing.resizedTo[0]} × ${result.preprocessing.resizedTo[1]} px`],
               ["Normalisasi", result.preprocessing.normalized ? "Ya" : "Tidak"],
-              ["Waktu Eksekusi", `${result.executionTimeSeconds.toFixed(2)} detik`],
+              ["Waktu Eksekusi", result.executionTimeSeconds !== null ? `${result.executionTimeSeconds.toFixed(2)} detik` : "Menghitung…"],
             ].map(([label, value]) => (
               <div key={label as string}>
                 <dt className="text-muted-foreground">{label}</dt>
@@ -107,11 +107,13 @@ export default function DetectionDetailPage({ params }: { params: { id: string }
       </Card>
 
       <div className="flex gap-2 flex-wrap">
-        <Button asChild variant="outline">
-          <a href={result.gradcamHeatmapUrl} download="gradcam-heatmap.jpg">
-            <IconDownload className="size-4 mr-1.5" /> Unduh Heatmap
-          </a>
-        </Button>
+        {result.gradcamHeatmapUrl && (
+          <Button asChild variant="outline">
+            <a href={result.gradcamHeatmapUrl} download="gradcam-heatmap.png">
+              <IconDownload className="size-4 mr-1.5" /> Unduh Heatmap
+            </a>
+          </Button>
+        )}
         <Dialog>
           <DialogTrigger asChild>
             <Button variant="destructive" className="ml-auto">

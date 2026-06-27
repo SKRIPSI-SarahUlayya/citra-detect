@@ -1,12 +1,27 @@
 import { cn } from "@/lib/utils"
 
 interface ConfidenceBarProps {
-  confidence: number
+  confidence: number | null
   mini?: boolean
   className?: string
 }
 
 export function ConfidenceBar({ confidence, mini = false, className }: ConfidenceBarProps) {
+  if (confidence === null) {
+    if (mini) {
+      return (
+        <div className={cn("flex items-center gap-2 text-muted-foreground text-xs", className)}>
+          <span>Mengukur…</span>
+        </div>
+      )
+    }
+    return (
+      <div className={cn("space-y-1.5 text-sm text-muted-foreground", className)}>
+        <span>Menghitung tingkat keyakinan...</span>
+      </div>
+    )
+  }
+
   const pct = Math.round(confidence * 100)
   const color =
     pct >= 90 ? "bg-green-500" : pct >= 70 ? "bg-yellow-500" : "bg-red-500"

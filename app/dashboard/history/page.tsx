@@ -26,7 +26,7 @@ import {
 import { PredictionBadge } from "@/components/prediction-badge"
 import { ConfidenceBar } from "@/components/confidence-bar"
 import { EmptyState } from "@/components/empty-state"
-import { mockHistory } from "@/lib/mock-data"
+import { getHistory, deleteDetection } from "@/lib/api"
 import type { DetectionResult, Prediction } from "@/lib/types"
 import { IconArrowUp, IconArrowDown, IconDotsVertical, IconEye, IconDownload, IconTrash, IconChevronLeft, IconChevronRight } from "@tabler/icons-react"
 
@@ -108,7 +108,7 @@ const columns: ColumnDef<DetectionResult>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => (
+    cell: ({ row, table }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="size-8">
@@ -121,12 +121,17 @@ const columns: ColumnDef<DetectionResult>[] = [
               <IconEye className="size-4" /> Lihat Grad-CAM
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <a href={row.original.gradcamHeatmapUrl} download className="flex items-center gap-2">
-              <IconDownload className="size-4" /> Unduh Heatmap
-            </a>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive flex items-center gap-2">
+          {row.original.gradcamHeatmapUrl && (
+            <DropdownMenuItem asChild>
+              <a href={row.original.gradcamHeatmapUrl} download className="flex items-center gap-2">
+                <IconDownload className="size-4" /> Unduh Heatmap
+              </a>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem 
+            className="text-destructive flex items-center gap-2 cursor-pointer"
+            onClick={() => (table.options.meta as any)?.onDelete(row.original.id)}
+          >
             <IconTrash className="size-4" /> Hapus
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -137,12 +142,37 @@ const columns: ColumnDef<DetectionResult>[] = [
 ]
 
 export default function HistoryPage() {
+  const [data, setData] = React.useState<DetectionResult[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "createdAt", desc: true }])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState("")
   const [predFilter, setPredFilter] = React.useState("all")
 
-  const data = React.useMemo(() => mockHistory, [])
+  const loadData = React.useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await getHistory()
+      setData(res)
+    } catch (err) {
+      console.error("Failed to load history:", err)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDetection(id)
+      setData((prev) => prev.filter((d) => d.id !== id))
+    } catch (err) {
+      console.error("Failed to delete:", err)
+    }
+  }
 
   const table = useReactTable({
     data,
@@ -156,6 +186,9 @@ export default function HistoryPage() {
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     initialState: { pagination: { pageSize: 10 } },
+    meta: {
+      onDelete: handleDelete,
+    },
   })
 
   const handlePredFilter = (val: string) => {

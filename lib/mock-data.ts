@@ -3,7 +3,7 @@ import type { DetectionResult, ModelMetrics } from "./types"
 const PLACEHOLDER_ORIGINAL = "https://picsum.photos/seed/orig/400/400"
 const PLACEHOLDER_HEATMAP = "https://picsum.photos/seed/heat/400/400"
 
-export const mockHistory: DetectionResult[] = [
+const rawHistory = [
   {
     id: "det_001",
     fileName: "photo_instagram_001.jpg",
@@ -305,6 +305,16 @@ export const mockHistory: DetectionResult[] = [
     createdAt: "2026-05-29T20:00:00Z",
   },
 ]
+
+export const mockHistory: DetectionResult[] = rawHistory.map(item => ({
+  ...item,
+  prediction: item.prediction as "Asli" | "AI-Generated",
+  preprocessing: {
+    resizedTo: item.preprocessing.resizedTo as [number, number],
+    normalized: item.preprocessing.normalized,
+  },
+  status: "success" as const,
+}))
 
 export const mockMetrics: ModelMetrics = {
   accuracy: 0.942,

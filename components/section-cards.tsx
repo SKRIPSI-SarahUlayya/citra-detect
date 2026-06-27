@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import {
   Card,
@@ -10,15 +11,31 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { IconTrendingUp, IconTrendingDown, IconBrain, IconPhoto, IconPhotoAi, IconCircleCheck } from "@tabler/icons-react"
-import { mockHistory, mockMetrics } from "@/lib/mock-data"
+import { getHistory, getMetrics } from "@/lib/api"
 
 export function SectionCards() {
-  const total = mockHistory.length
-  const aiCount = mockHistory.filter((d) => d.prediction === "AI-Generated").length
+  const [total, setTotal] = React.useState(0)
+  const [aiCount, setAiCount] = React.useState(0)
+  const [accuracy, setAccuracy] = React.useState(0)
+  const [f1Score, setF1Score] = React.useState(0)
+
+  React.useEffect(() => {
+    getHistory().then((history) => {
+      const tot = history.length
+      const ai = history.filter((d) => d.prediction === "AI-Generated").length
+      setTotal(tot)
+      setAiCount(ai)
+    }).catch(console.error)
+
+    getMetrics().then((metrics) => {
+      setAccuracy(metrics.accuracy)
+      setF1Score(metrics.f1Score)
+    }).catch(console.error)
+  }, [])
+
   const asliCount = total - aiCount
   const aiPct = total > 0 ? Math.round((aiCount / total) * 100) : 0
   const asliPct = total > 0 ? Math.round((asliCount / total) * 100) : 0
-  const accuracy = mockMetrics.accuracy
 
   return (
     <div className="grid grid-cols-2 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs lg:px-6 @5xl/main:grid-cols-4 dark:*:data-[slot=card]:bg-card">
@@ -107,7 +124,7 @@ export function SectionCards() {
           <div className="line-clamp-1 flex gap-2 font-medium">
             Model CNN aktif <IconTrendingUp className="size-4" />
           </div>
-          <div className="text-muted-foreground">F1-Score: {(mockMetrics.f1Score * 100).toFixed(1)}%</div>
+          <div className="text-muted-foreground">F1-Score: {(f1Score * 100).toFixed(1)}%</div>
         </CardFooter>
       </Card>
     </div>

@@ -7,7 +7,8 @@ import { ConfusionMatrix } from "@/components/confusion-matrix"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { mockMetrics } from "@/lib/mock-data"
+import { getMetrics } from "@/lib/api"
+import type { ModelMetrics } from "@/lib/types"
 
 const accConfig: ChartConfig = {
   trainAcc: { label: "Train Accuracy", color: "var(--chart-1)" },
@@ -19,7 +20,21 @@ const lossConfig: ChartConfig = {
 }
 
 export default function PerformancePage() {
-  const m = mockMetrics
+  const [metrics, setMetrics] = React.useState<ModelMetrics | null>(null)
+
+  React.useEffect(() => {
+    getMetrics().then(setMetrics).catch(console.error)
+  }, [])
+
+  if (!metrics) {
+    return (
+      <div className="flex h-96 items-center justify-center text-muted-foreground">
+        Memuat metrik performa model...
+      </div>
+    )
+  }
+
+  const m = metrics
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
       <div>

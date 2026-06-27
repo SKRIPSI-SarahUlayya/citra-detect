@@ -344,27 +344,27 @@ graph TD
 ## 11. Checklist Implementasi
 
 **Database & Storage**
-- [ ] Buat project Supabase + simpan kredensial di `.env.local`
-- [ ] Eksekusi DDL 5 tabel sesuai urutan §5
-- [ ] Buat 2 bucket privat (`detection-images`, `gradcam-results`)
-- [ ] Buat index (`created_at`, `prediction`, `user_id`, partial unique `is_active`)
-- [ ] Aktifkan RLS + policy per tabel (§7)
-- [ ] Seed `model_versions` + `model_metrics` + 30 `training_epochs`
+- [x] Buat project Supabase + simpan kredensial di `.env.local`
+- [x] Eksekusi DDL 5 tabel sesuai urutan §5
+- [x] Buat 2 bucket privat (`detection-images`, `gradcam-results`)
+- [x] Buat index (`created_at`, `prediction`, `user_id`, partial unique `is_active`)
+- [x] Aktifkan RLS + policy per tabel (§7)
+- [x] Seed `model_versions` + `model_metrics` + 30 `training_epochs`
 
 **Lapisan Data Frontend**
-- [ ] Tambah field baru di `DetectionResult` (§8)
-- [ ] Buat `lib/supabase/client.ts` & `server.ts`
-- [ ] Buat `lib/mappers.ts` (snake↔camel + signed URL)
-- [ ] Ganti implementasi 6 fungsi di [lib/api.ts](../lib/api.ts) → Supabase
+- [x] Tambah field baru di `DetectionResult` (§8)
+- [x] Buat `lib/supabase.ts` (Supabase client setup)
+- [x] Buat `lib/mappers.ts` (snake↔camel + signed URL)
+- [x] Ganti implementasi 6 fungsi di [lib/api.ts](../lib/api.ts) → Supabase
 
 **Integrasi Model**
-- [ ] Route handler `POST /api/detect` (upload + HF inference + simpan)
-- [ ] Cleanup objek Storage saat `deleteDetection`
+- [x] Route handler / action `POST /api/detect` (upload + HF inference + simpan)
+- [x] Cleanup objek Storage saat `deleteDetection`
 
 **Keamanan (saat auth aktif)**
-- [ ] Trigger auto-create `profiles` saat user baru daftar
-- [ ] Perketat RLS dari permisif → `auth.uid()`
-- [ ] Storage policy berbasis prefix `{user_id}/`
+- [x] Trigger auto-create `profiles` saat user baru daftar
+- [x] Perketat RLS dari permisif → `auth.uid()`
+- [x] Storage policy berbasis prefix `{user_id}/`
 
 ---
 
